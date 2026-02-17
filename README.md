@@ -268,4 +268,3 @@ ResiliLytics is part of an applied research portfolio exploring structured resil
 
 🧡 Built to help resilient SMEs build resilient supply chains.
 
-If you'd like, I can now:
