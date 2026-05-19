@@ -1163,31 +1163,31 @@
   }
 
   // ── Form submission ──
-  async function submitForm() {
+   async function submitForm() {
     let valid = true;
-
+  
     const email = document.getElementById('email').value.trim();
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     showErr('emailErr', !emailOk); if (!emailOk) valid = false;
-
+  
     const sector = document.getElementById('sector').value;
     showErr('sectorErr', !sector); if (!sector) valid = false;
-
+  
     const size = document.getElementById('size').value;
     showErr('sizeErr', !size); if (!size) valid = false;
-
+  
     const bizCountry = document.getElementById('bizCountry').value.trim();
     showErr('bizCountryErr', !bizCountry); if (!bizCountry) valid = false;
-
+  
     const disruption = document.querySelector('input[name="disruption"]:checked');
     showErr('disruptionErr', !disruption); if (!disruption) valid = false;
-
+  
     const consent = document.getElementById('consent').checked;
     showErr('consentErr', !consent); if (!consent) valid = false;
-
-    // Collect table supplier rows
+  
+    // Collect suppliers table
     const tableSuppliers = [];
-    for (let i = 1; i <= 10; i++) {
+    for (let i=1; i<=10; i++) {
       const name = document.getElementById(`s_name_${i}`)?.value.trim();
       if (name) {
         tableSuppliers.push({
@@ -1199,64 +1199,47 @@
         });
       }
     }
-
-    // Determine all suppliers: prefer table edits + overflow from import
-    const allSuppliers = tableSuppliers.length > 0
-      ? [...tableSuppliers, ...overflowSuppliers]
-      : allImportedSuppliers;
-
-    const hasSupplier = allSuppliers.length > 0;
-    showErr('supplierErr', !hasSupplier);
-    if (!hasSupplier) valid = false;
-
+  
+    const allSuppliers = tableSuppliers.length > 0 ? [...tableSuppliers, ...overflowSuppliers] : allImportedSuppliers;
+    showErr('supplierErr', allSuppliers.length === 0); if(allSuppliers.length === 0) valid=false;
     if (!valid) return;
-
-    const dtypes = Array.from(document.querySelectorAll('input[name="dtype"]:checked')).map(c => c.value);
-
-    // Build the submission payload
+  
+    const dtypes = Array.from(document.querySelectorAll('input[name="dtype"]:checked')).map(c=>c.value);
+  
     const payload = {
-      email: document.getElementById('email').value,
-      sector: document.getElementById('sector').value,
-      size: document.getElementById('size').value,
-      bizCountry: document.getElementById('bizCountry').value,
-      disruption: document.querySelector('input[name="disruption"]:checked').value,
-      disruptionTypes: Array.from(document.querySelectorAll('input[name="dtype"]:checked')).map(c => c.value),
-      comments: document.getElementById('comments').value,
-      all_suppliers_json: JSON.stringify(allImportedSuppliers),
+      email,
+      sector,
+      size,
+      bizCountry,
+      disruption: disruption.value,
+      disruptionTypes: dtypes,
+      comments: document.getElementById('comments').value.trim(),
+      all_suppliers_json: JSON.stringify(allSuppliers)
     };
-    
-    fetch('https://script.google.com/macros/s/AKfycbxzvP2g6_70l3_oG7YNVZEQTRSYP3mWe6jR4vM7m570j9oZdyeK1fWjIZMZjBojl51D/exec', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(r => alert('Submission received!'))
-    .catch(err => alert('Error submitting.'))
-    };
-
+  
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.textContent = 'Submitting…';
-
+  
     try {
-      const response = await fetch('/', {
+      const response = await fetch('YOUR_WEB_APP_URL_HERE', { // replace with your Web App URL
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(payload).toString(),
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' }
       });
-
-      if (response.ok) {
-        document.getElementById('progressFill').style.width = '100%';
-        document.getElementById('progressLabel').textContent = 'Complete ✓';
-        btn.style.display = 'none';
+  
+      const res = await response.json();
+  
+      if(res.status==='success'){
         document.getElementById('successMsg').style.display = 'block';
-        document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth' });
+        btn.style.display = 'none';
       } else {
-        throw new Error(`Server responded with ${response.status}`);
+        throw new Error(res.message || 'Submission failed');
       }
-    } catch (err) {
+  
+    } catch(err){
       btn.disabled = false;
-      btn.innerHTML = '✦ Submit &amp; Claim My Free Resilience Report';
+      btn.textContent = '✦ Submit & Claim My Free Resilience Report';
       alert('There was a problem submitting the form. Please try again. If the issue persists, please contact us directly.');
     }
   }
