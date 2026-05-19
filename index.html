@@ -1225,7 +1225,7 @@
       all_suppliers_json: JSON.stringify(allImportedSuppliers),
     };
     
-    fetch('YOUR_GOOGLE_SCRIPT_URL', {
+    fetch('https://script.google.com/macros/s/AKfycbxzvP2g6_70l3_oG7YNVZEQTRSYP3mWe6jR4vM7m570j9oZdyeK1fWjIZMZjBojl51D/exec', {
       method: 'POST',
       body: JSON.stringify(payload)
     })
