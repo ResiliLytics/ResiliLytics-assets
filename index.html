@@ -1215,17 +1215,23 @@
 
     // Build the submission payload
     const payload = {
-      'form-name': 'resililytics-survey',
-      email,
-      sector,
-      size,
-      bizCountry,
-      disruption: disruption.value,
-      disruptionTypes: dtypes.join(', '),
-      all_suppliers_json: JSON.stringify(allSuppliers),
-      comments: document.getElementById('comments').value.trim(),
-      consent: 'true',
-      timestamp: new Date().toISOString(),
+      email: document.getElementById('email').value,
+      sector: document.getElementById('sector').value,
+      size: document.getElementById('size').value,
+      bizCountry: document.getElementById('bizCountry').value,
+      disruption: document.querySelector('input[name="disruption"]:checked').value,
+      disruptionTypes: Array.from(document.querySelectorAll('input[name="dtype"]:checked')).map(c => c.value),
+      comments: document.getElementById('comments').value,
+      all_suppliers_json: JSON.stringify(allImportedSuppliers),
+    };
+    
+    fetch('YOUR_GOOGLE_SCRIPT_URL', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(r => alert('Submission received!'))
+    .catch(err => alert('Error submitting.'))
     };
 
     const btn = document.getElementById('submitBtn');
